@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:typed_data'; // For working with byte data
-import 'dart:convert';
+import 'dart:typed_data'; // Para trabajar con datos de tipo byte
 
 void main() {
   runApp(const MainApp());
@@ -27,26 +26,96 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<String> _messages = [];
-  Uint8List? _imageBytes;
+  final List<dynamic> _messages = [];  // Lista para almacenar mensajes (pueden ser texto o imágenes)
+  Uint8List? _imageBytes;  // Para almacenar la imagen seleccionada
+  String? _textMessage;  // Para almacenar el texto ingresado
 
-  // Function to pick a file using file_picker
+  // Función para seleccionar una imagen
   Future<void> _pickImage() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result != null) {
       setState(() {
         _imageBytes = result.files.single.bytes;
+        _textMessage = null;  // Limpiar el texto si se selecciona una imagen
       });
     }
   }
 
-  // Function to send message to chatbot
-  void _sendMessage(String message) {
-    setState(() {
-      _messages.add("Tú: $message");
-      _messages.add("Chatbot: Respuesta predeterminada del chatbot");
-    });
-    _controller.clear();  // Clear the text field after sending the message.
+  // Función para enviar el mensaje (con imagen o solo texto)
+  void _sendMessage() {
+    if (_imageBytes != null || (_textMessage != null && _textMessage!.isNotEmpty)) {
+      setState(() {
+        // Si hay imagen, enviar imagen, sino enviar texto
+        if (_imageBytes != null) {
+          _messages.add({'type': 'image', 'content': _imageBytes, 'from': 'user'});
+        }
+        if (_textMessage != null && _textMessage!.isNotEmpty) {
+          _messages.add({'type': 'text', 'content': 'Tú: $_textMessage', 'from': 'user'});
+        }
+
+        // Respuesta básica del chatbot (texto)
+        String botResponse = _getBotResponse(_textMessage ?? '');
+        _messages.add({'type': 'text', 'content': 'Chatbot: $botResponse', 'from': 'bot'});
+
+        _controller.clear();  // Limpiar el campo de texto
+        _textMessage = null;  // Limpiar el texto ingresado
+        _imageBytes = null;   // Limpiar la imagen seleccionada
+      });
+    }
+  }
+
+  // Función que genera una respuesta básica del chatbot
+  String _getBotResponse(String message) {
+    if (message.toLowerCase() == 'hola') {
+      return '¡Hola! ¿Cómo puedo ayudarte hoy?';
+    } else if (message.toLowerCase().contains('precio')) {
+      return 'El precio es 20 USD.';
+    } else {
+      return 'Lo siento, no entiendo esa pregunta.';
+    }
+  }
+
+  // Widget para crear la burbuja de mensaje
+  Widget _buildMessageBubble(dynamic message) {
+    bool isUser = message['from'] == 'user';
+    if (message['type'] == 'text') {
+      return Align(
+        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isUser ? Colors.blueAccent : Colors.grey[300],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            message['content'],
+            style: TextStyle(
+              color: isUser ? Colors.white : Colors.black,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
+    } else if (message['type'] == 'image') {
+      return Align(
+        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.memory(
+              message['content'],
+              width: 150,  // Tamaño de la imagen
+              height: 150, // Tamaño de la imagen
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Container();
+    }
   }
 
   @override
@@ -62,9 +131,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             child: ListView.builder(
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_messages[index]),
-                );
+                return _buildMessageBubble(_messages[index]);
               },
             ),
           ),
@@ -72,12 +139,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: <Widget>[
-                // Button to pick image
+                // Botón para seleccionar imagen
                 IconButton(
                   icon: const Icon(Icons.image),
                   onPressed: _pickImage,
                 ),
-                // Text field for user input
+                // Si hay una imagen seleccionada, mostrarla al lado del campo de texto
+                if (_imageBytes != null)
+                  Container(
+                    width: 50,
+                    height: 50,
+                    margin: const EdgeInsets.only(right: 8.0),
+                    child: Image.memory(
+                      _imageBytes!,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                // Campo de texto para el mensaje del usuario
                 Expanded(
                   child: TextField(
                     controller: _controller,
@@ -85,23 +163,21 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       hintText: 'Escribe tu mensaje...',
                       border: OutlineInputBorder(),
                     ),
+                    onChanged: (text) {
+                      setState(() {
+                        _textMessage = text;  // Actualizar texto mientras se escribe
+                      });
+                    },
                   ),
                 ),
-                // Send button
+                // Botón para enviar el mensaje
                 IconButton(
                   icon: const Icon(Icons.send),
-                  onPressed: () {
-                    if (_controller.text.isNotEmpty) {
-                      _sendMessage(_controller.text);
-                    }
-                  },
+                  onPressed: _sendMessage,
                 ),
               ],
             ),
           ),
-          // Show image if selected
-          if (_imageBytes != null)
-            Image.memory(_imageBytes!),  // For web, show the image selected from the file system
         ],
       ),
     );
