@@ -7,17 +7,24 @@ environment:
   sdk: ^3.5.4
 
 dependencies:
+  audioplayers: ^6.1.1
   file_picker: ^8.3.1
   flutter:
     sdk: flutter
+  flutter_sound: ^9.21.1
+  http: ^1.3.0
   image_picker: ^1.1.2
-  
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  permission_handler: ^11.3.1
+  speech_to_text: ^7.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-  
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/  # Añade esta línea si tienes imágenes locales para cargar
