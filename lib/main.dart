@@ -329,6 +329,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           _textMessage = text;
                         });
                       },
+                      onSubmitted: (_) {
+                        _sendMessage();
+                      },
                       decoration: const InputDecoration(
                         hintText: 'Type a message...',
                         border: InputBorder.none,
