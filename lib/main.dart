@@ -118,6 +118,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       // Mantener el foco en el campo de texto
       FocusScope.of(context).requestFocus(_focusNode);
     }
+
+    // Detener la grabación si está activa
+    if (_isListening) {
+      setState(() {
+        _isListening = false;
+      });
+      _speech.stop();
+    }
   }
 
   String _getBotResponse(String message) {
@@ -345,7 +353,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.send),
-                    onPressed: _sendMessage,
+                    onPressed: () {
+                      _sendMessage();
+                      // Detener la grabación y ocultar el mensaje de audio
+                      if (_isListening) {
+                        _speech.stop();
+                        setState(() {
+                          _isListening = false;
+                        });
+                      }
+                    },
                   ),
                 ],
               ),
