@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:intl/intl.dart'; // Import para el formato de la hora
-
+// ayudaa
 void main() {
   runApp(const MainApp());
 }
