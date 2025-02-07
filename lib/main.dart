@@ -3,8 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:intl/intl.dart'; // Import para el formato de la hora
-// ayudaa
+import 'package:intl/intl.dart';
+
 void main() {
   runApp(const MainApp());
 }
@@ -298,6 +298,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     icon: const Icon(Icons.audiotrack),
                     onPressed: _pickAudio,
                   ),
+                  if (_audioBytes != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Icon(
+                        Icons.check_circle,
+                        color: Colors.blueAccent, // Color ajustado para el ícono "visto"
+                        size: 20,
+                      ),
+                    ),
                   IconButton(
                     icon: Icon(_isListening ? Icons.mic_off : Icons.mic),
                     onPressed: _startListening,
@@ -315,15 +324,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
-                      decoration: const InputDecoration(
-                        hintText: 'Escribe tu mensaje...',
-                        border: OutlineInputBorder(),
-                      ),
                       onChanged: (text) {
                         setState(() {
                           _textMessage = text;
                         });
                       },
+                      decoration: const InputDecoration(
+                        hintText: 'Type a message...',
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
                   IconButton(
