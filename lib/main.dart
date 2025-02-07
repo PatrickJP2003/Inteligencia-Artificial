@@ -30,6 +30,7 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();  // FocusNode agregado
   final List<Map<String, dynamic>> _messages = [];
   Uint8List? _imageBytes;
   Uint8List? _audioBytes;
@@ -113,6 +114,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         _imageBytes = null;
         _audioBytes = null;
       });
+
+      // Mantener el foco en el campo de texto
+      FocusScope.of(context).requestFocus(_focusNode);
     }
   }
 
@@ -324,6 +328,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      focusNode: _focusNode,  // Asociamos el FocusNode
                       onChanged: (text) {
                         setState(() {
                           _textMessage = text;
